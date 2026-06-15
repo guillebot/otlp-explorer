@@ -1,10 +1,13 @@
 package main
 
 import (
+	"embed"
 	"io/fs"
 	"log"
 	"net/http"
 	"os"
+	"path"
+	"strings"
 
 	"github.com/otlp-viewer/otlp-viewer/backend/internal/api"
 	"github.com/otlp-viewer/otlp-viewer/backend/internal/config"
@@ -13,11 +16,7 @@ import (
 )
 
 //go:embed ui/dist/*
-var uiFS embedFS
-
-type embedFS interface {
-	Open(name string) (fs.File, error)
-}
+var embeddedDist embed.FS
 
 func main() {
 	cfg := config.Load()
@@ -48,15 +47,25 @@ func main() {
 }
 
 func spaHandler(apiHandler http.Handler) http.Handler {
+	sub, err := fs.Sub(embeddedDist, "ui/dist")
+	if err != nil {
+		log.Printf("warn: embedded frontend unavailable: %v", err)
+	}
+	fileServer := http.FileServer(http.FS(sub))
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/" {
-			http.ServeFile(w, r, "frontend/dist/index.html")
-			return
-		}
-		if len(r.URL.Path) >= 4 && r.URL.Path[:4] == "/api" {
+		if strings.HasPrefix(r.URL.Path, "/api") {
 			apiHandler.ServeHTTP(w, r)
 			return
 		}
-		http.FileServer(http.Dir("frontend/dist")).ServeHTTP(w, r)
+		clean := path.Clean(strings.TrimPrefix(r.URL.Path, "/"))
+		if clean == "." || clean == "/" {
+			http.ServeFileFS(w, r, sub, "index.html")
+			return
+		}
+		if _, err := fs.Stat(sub, clean); err != nil {
+			http.ServeFileFS(w, r, sub, "index.html")
+			return
+		}
+		fileServer.ServeHTTP(w, r)
 	})
 }
