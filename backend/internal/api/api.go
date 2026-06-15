@@ -195,14 +195,13 @@ func (s *Server) fileAnalyze(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]any{"messages": out})
 		return
 	}
-	s.analyze(w, withBody(r, req.Content))
-}
-
-func withBody(r *http.Request, payload string) *http.Request {
-	req := &http.Request{}
-	*req = *r
-	req.Body = http.NoBody
-	return req
+	msg, err := otlpdecode.Analyze(otlpdecode.AnalyzeRequest{Source: "upload", Payload: req.Content})
+	if err != nil {
+		writeErr(w, http.StatusBadRequest, err)
+		return
+	}
+	msg.ValidationResults = validate.Run(msg, s.cfg.MaxPayloadBytes, s.cfg.KafkaMessageWarnBytes)
+	writeJSON(w, http.StatusOK, map[string]any{"message": msg, "problems": validate.Explain(msg.ValidationResults)})
 }
 
 func (s *Server) sessions(w http.ResponseWriter, r *http.Request) {
