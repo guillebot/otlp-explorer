@@ -7,22 +7,22 @@ import (
 	"errors"
 	"time"
 
-	"github.com/otlp-viewer/otlp-viewer/backend/internal/kafka"
-	"github.com/otlp-viewer/otlp-viewer/backend/internal/model"
+	"github.com/otlp-viewer/otlp-viewer/internal/kafka"
+	"github.com/otlp-viewer/otlp-viewer/internal/model"
 )
 
 type Request struct {
-	Cluster          string            `json:"cluster"`
-	Topic            string            `json:"topic"`
-	Key              string            `json:"key"`
-	Headers          map[string]string `json:"headers"`
-	Payload          string            `json:"payload"`
-	SourceEncoding   model.Encoding    `json:"sourceEncoding"`
-	TargetEncoding   model.Encoding    `json:"targetEncoding"`
-	Count            int               `json:"count"`
-	DelayMS          int               `json:"delayMs"`
-	DryRun           bool              `json:"dryRun"`
-	Confirm          bool              `json:"confirm"`
+	Cluster        string            `json:"cluster"`
+	Topic          string            `json:"topic"`
+	Key            string            `json:"key"`
+	Headers        map[string]string `json:"headers"`
+	Payload        string            `json:"payload"`
+	SourceEncoding model.Encoding    `json:"sourceEncoding"`
+	TargetEncoding model.Encoding    `json:"targetEncoding"`
+	Count          int               `json:"count"`
+	DelayMS        int               `json:"delayMs"`
+	DryRun         bool              `json:"dryRun"`
+	Confirm        bool              `json:"confirm"`
 }
 
 type Result struct {

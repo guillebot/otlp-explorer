@@ -1,0 +1,22 @@
+{
+  "resourceLogs": [
+    {
+      "resource": {
+        "attributes": [
+          { "key": "host.name", "value": { "stringValue": "node-a" } }
+        ]
+      },
+      "scopeLogs": [
+        {
+          "logRecords": [
+            {
+              "timeUnixNano": "1700000000000000000",
+              "severityText": "WARN",
+              "body": { "stringValue": "service name missing" }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

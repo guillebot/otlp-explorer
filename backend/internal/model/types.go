@@ -3,7 +3,7 @@ package model
 type SignalType string
 
 const (
-	SignalTraces SignalType = "traces"
+	SignalTraces  SignalType = "traces"
 	SignalMetrics SignalType = "metrics"
 	SignalLogs    SignalType = "logs"
 	SignalUnknown SignalType = "unknown"
@@ -48,16 +48,16 @@ type ValidationResult struct {
 }
 
 type Summary struct {
-	SignalType    SignalType        `json:"signalType"`
-	ResourceCount int               `json:"resourceCount"`
-	ScopeCount    int               `json:"scopeCount"`
-	ItemCount     int               `json:"itemCount"`
-	ServiceNames  []string          `json:"serviceNames"`
-	MetricNames   []string          `json:"metricNames"`
-	Severities    map[Severity]int  `json:"severities"`
-	TraceIDs      []string          `json:"traceIds"`
-	WarningsCount int               `json:"warningsCount"`
-	ErrorsCount   int               `json:"errorsCount"`
+	SignalType    SignalType       `json:"signalType"`
+	ResourceCount int              `json:"resourceCount"`
+	ScopeCount    int              `json:"scopeCount"`
+	ItemCount     int              `json:"itemCount"`
+	ServiceNames  []string         `json:"serviceNames"`
+	MetricNames   []string         `json:"metricNames"`
+	Severities    map[Severity]int `json:"severities"`
+	TraceIDs      []string         `json:"traceIds"`
+	WarningsCount int              `json:"warningsCount"`
+	ErrorsCount   int              `json:"errorsCount"`
 }
 
 type DecodedMessage struct {

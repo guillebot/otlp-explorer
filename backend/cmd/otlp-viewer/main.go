@@ -9,10 +9,10 @@ import (
 	"path"
 	"strings"
 
-	"github.com/otlp-viewer/otlp-viewer/backend/internal/api"
-	"github.com/otlp-viewer/otlp-viewer/backend/internal/config"
-	"github.com/otlp-viewer/otlp-viewer/backend/internal/kafka"
-	"github.com/otlp-viewer/otlp-viewer/backend/internal/storage"
+	"github.com/otlp-viewer/otlp-viewer/internal/api"
+	"github.com/otlp-viewer/otlp-viewer/internal/config"
+	"github.com/otlp-viewer/otlp-viewer/internal/kafka"
+	"github.com/otlp-viewer/otlp-viewer/internal/storage"
 )
 
 //go:embed ui/dist/*

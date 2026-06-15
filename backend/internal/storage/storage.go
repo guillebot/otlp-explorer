@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/otlp-viewer/otlp-viewer/backend/internal/model"
+	"github.com/otlp-viewer/otlp-viewer/internal/model"
 	_ "modernc.org/sqlite"
 )
 

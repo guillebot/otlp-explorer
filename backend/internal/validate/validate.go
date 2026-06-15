@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/otlp-viewer/otlp-viewer/backend/internal/model"
+	"github.com/otlp-viewer/otlp-viewer/internal/model"
 )
 
 var (

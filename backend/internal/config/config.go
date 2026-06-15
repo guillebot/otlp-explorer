@@ -8,16 +8,16 @@ import (
 )
 
 type KafkaCluster struct {
-	Name            string `json:"name"`
-	Bootstrap       string `json:"bootstrapServers"`
-	SecurityProto   string `json:"securityProtocol"`
-	SASLMechanism   string `json:"saslMechanism,omitempty"`
-	Username        string `json:"username,omitempty"`
-	Password        string `json:"password,omitempty"`
-	TLSCAFile       string `json:"tlsCaFile,omitempty"`
-	TLSCertFile     string `json:"tlsCertFile,omitempty"`
-	TLSKeyFile      string `json:"tlsKeyFile,omitempty"`
-	TLSSkipVerify   bool   `json:"tlsSkipVerify,omitempty"`
+	Name          string `json:"name"`
+	Bootstrap     string `json:"bootstrapServers"`
+	SecurityProto string `json:"securityProtocol"`
+	SASLMechanism string `json:"saslMechanism,omitempty"`
+	Username      string `json:"username,omitempty"`
+	Password      string `json:"password,omitempty"`
+	TLSCAFile     string `json:"tlsCaFile,omitempty"`
+	TLSCertFile   string `json:"tlsCertFile,omitempty"`
+	TLSKeyFile    string `json:"tlsKeyFile,omitempty"`
+	TLSSkipVerify bool   `json:"tlsSkipVerify,omitempty"`
 }
 
 type Config struct {

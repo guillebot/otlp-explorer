@@ -1,0 +1,33 @@
+{
+  "resourceMetrics": [
+    {
+      "resource": {
+        "attributes": [
+          { "key": "service.name", "value": { "stringValue": "web" } }
+        ]
+      },
+      "scopeMetrics": [
+        {
+          "metrics": [
+            {
+              "name": "http.server.duration",
+              "unit": "ms",
+              "gauge": {
+                "dataPoints": [
+                  {
+                    "timeUnixNano": "1700000000000000000",
+                    "attributes": [
+                      { "key": "request.id", "value": { "stringValue": "a1f0de9e-6624-4c68-a5ee-8e57f668cefd" } },
+                      { "key": "path", "value": { "stringValue": "/checkout" } }
+                    ],
+                    "asDouble": 132.1
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

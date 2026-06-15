@@ -1,0 +1,24 @@
+{
+  "resourceSpans": [
+    {
+      "resource": {
+        "attributes": [
+          { "key": "service.name", "value": { "stringValue": "orders-api" } }
+        ]
+      },
+      "scopeSpans": [
+        {
+          "spans": [
+            {
+              "traceId": "11111111111111111111111111111111",
+              "spanId": "1111111111111111",
+              "name": "GET /orders",
+              "startTimeUnixNano": "1700000002000000000",
+              "endTimeUnixNano": "1700000001000000000"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

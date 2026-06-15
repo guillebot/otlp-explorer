@@ -9,13 +9,13 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/otlp-viewer/otlp-viewer/backend/internal/config"
-	"github.com/otlp-viewer/otlp-viewer/backend/internal/kafka"
-	"github.com/otlp-viewer/otlp-viewer/backend/internal/model"
-	"github.com/otlp-viewer/otlp-viewer/backend/internal/otlpdecode"
-	"github.com/otlp-viewer/otlp-viewer/backend/internal/replay"
-	"github.com/otlp-viewer/otlp-viewer/backend/internal/storage"
-	"github.com/otlp-viewer/otlp-viewer/backend/internal/validate"
+	"github.com/otlp-viewer/otlp-viewer/internal/config"
+	"github.com/otlp-viewer/otlp-viewer/internal/kafka"
+	"github.com/otlp-viewer/otlp-viewer/internal/model"
+	"github.com/otlp-viewer/otlp-viewer/internal/otlpdecode"
+	"github.com/otlp-viewer/otlp-viewer/internal/replay"
+	"github.com/otlp-viewer/otlp-viewer/internal/storage"
+	"github.com/otlp-viewer/otlp-viewer/internal/validate"
 )
 
 type Server struct {
@@ -50,9 +50,15 @@ func New(cfg config.Config, k *kafka.Client, s *storage.Store) http.Handler {
 	return r
 }
 
-func (s *Server) health(w http.ResponseWriter, r *http.Request) { writeJSON(w, http.StatusOK, map[string]any{"status": "ok"}) }
-func (s *Server) clusters(w http.ResponseWriter, r *http.Request) { writeJSON(w, http.StatusOK, s.cfg.Clusters) }
-func (s *Server) clustersTest(w http.ResponseWriter, r *http.Request) { writeJSON(w, http.StatusOK, map[string]any{"ok": true}) }
+func (s *Server) health(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusOK, map[string]any{"status": "ok"})
+}
+func (s *Server) clusters(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusOK, s.cfg.Clusters)
+}
+func (s *Server) clustersTest(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusOK, map[string]any{"ok": true})
+}
 func (s *Server) kafkaTopics(w http.ResponseWriter, r *http.Request) {
 	topics, err := s.kafka.ListTopics(r.Context(), chi.URLParam(r, "cluster"))
 	if err != nil {
@@ -61,7 +67,9 @@ func (s *Server) kafkaTopics(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, http.StatusOK, topics)
 }
-func (s *Server) kafkaPartitions(w http.ResponseWriter, r *http.Request) { writeJSON(w, http.StatusOK, []int{0, 1, 2}) }
+func (s *Server) kafkaPartitions(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusOK, []int{0, 1, 2})
+}
 
 func (s *Server) kafkaConsume(w http.ResponseWriter, r *http.Request) {
 	var req struct {
@@ -126,7 +134,9 @@ func (s *Server) analyze(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) validateOnly(w http.ResponseWriter, r *http.Request) {
-	var req struct{ Message model.DecodedMessage `json:"message"` }
+	var req struct {
+		Message model.DecodedMessage `json:"message"`
+	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeErr(w, http.StatusBadRequest, err)
 		return

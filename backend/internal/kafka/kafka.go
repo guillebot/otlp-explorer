@@ -6,39 +6,31 @@ import (
 	"strings"
 	"time"
 
-	"github.com/otlp-viewer/otlp-viewer/backend/internal/config"
+	"github.com/otlp-viewer/otlp-viewer/internal/config"
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 type Client struct {
-	clients map[string]*kgo.Client
+	clusters map[string]config.KafkaCluster
 }
 
 func New(clusters []config.KafkaCluster) (*Client, error) {
-	out := &Client{clients: map[string]*kgo.Client{}}
+	out := &Client{clusters: map[string]config.KafkaCluster{}}
 	for _, c := range clusters {
-		opts := []kgo.Opt{kgo.SeedBrokers(strings.Split(c.Bootstrap, ",")...)}
-		cl, err := kgo.NewClient(opts...)
-		if err != nil {
-			return nil, fmt.Errorf("cluster %s: %w", c.Name, err)
-		}
-		out.clients[c.Name] = cl
+		out.clusters[c.Name] = c
 	}
 	return out, nil
 }
 
-func (c *Client) Close() {
-	for _, cl := range c.clients {
-		cl.Close()
-	}
-}
+func (c *Client) Close() {}
 
 func (c *Client) ListTopics(ctx context.Context, cluster string) ([]string, error) {
-	cl, ok := c.clients[cluster]
-	if !ok {
-		return nil, fmt.Errorf("unknown cluster %q", cluster)
+	cl, err := c.newClient(cluster)
+	if err != nil {
+		return nil, err
 	}
+	defer cl.Close()
 	admin := kadm.NewClient(cl)
 	meta, err := admin.ListTopics(ctx)
 	if err != nil {
@@ -63,16 +55,14 @@ type ConsumedMessage struct {
 }
 
 func (c *Client) ConsumeLatestN(ctx context.Context, cluster, topic string, n int) ([]ConsumedMessage, error) {
-	cl, ok := c.clients[cluster]
-	if !ok {
-		return nil, fmt.Errorf("unknown cluster %q", cluster)
+	cl, err := c.newClient(cluster, topic)
+	if err != nil {
+		return nil, err
 	}
+	defer cl.Close()
 	if n <= 0 {
 		n = 10
 	}
-	cl.AssignGroup("")
-	cl.AddConsumeTopics(topic)
-	defer cl.PurgeTopicsFromClient(topic)
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
@@ -105,14 +95,27 @@ func (c *Client) ConsumeLatestN(ctx context.Context, cluster, topic string, n in
 }
 
 func (c *Client) Produce(ctx context.Context, cluster, topic, key string, headers map[string]string, payload []byte) error {
-	cl, ok := c.clients[cluster]
-	if !ok {
-		return fmt.Errorf("unknown cluster %q", cluster)
+	cl, err := c.newClient(cluster)
+	if err != nil {
+		return err
 	}
+	defer cl.Close()
 	recHeaders := make([]kgo.RecordHeader, 0, len(headers))
 	for k, v := range headers {
 		recHeaders = append(recHeaders, kgo.RecordHeader{Key: k, Value: []byte(v)})
 	}
 	rec := &kgo.Record{Topic: topic, Key: []byte(key), Value: payload, Headers: recHeaders}
 	return cl.ProduceSync(ctx, rec).FirstErr()
+}
+
+func (c *Client) newClient(cluster string, consumeTopics ...string) (*kgo.Client, error) {
+	conf, ok := c.clusters[cluster]
+	if !ok {
+		return nil, fmt.Errorf("unknown cluster %q", cluster)
+	}
+	opts := []kgo.Opt{kgo.SeedBrokers(strings.Split(conf.Bootstrap, ",")...)}
+	if len(consumeTopics) > 0 {
+		opts = append(opts, kgo.ConsumeTopics(consumeTopics...))
+	}
+	return kgo.NewClient(opts...)
 }

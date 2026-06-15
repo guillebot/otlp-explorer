@@ -10,16 +10,16 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/otlp-viewer/otlp-viewer/backend/internal/model"
+	"github.com/otlp-viewer/otlp-viewer/internal/model"
 	"go.opentelemetry.io/collector/pdata/plog"
 	"go.opentelemetry.io/collector/pdata/pmetric"
 	"go.opentelemetry.io/collector/pdata/ptrace"
 )
 
 type AnalyzeRequest struct {
-	Source       string         `json:"source"`
-	Payload      string         `json:"payload"`
-	EncodingHint model.Encoding `json:"encodingHint"`
+	Source       string           `json:"source"`
+	Payload      string           `json:"payload"`
+	EncodingHint model.Encoding   `json:"encodingHint"`
 	SignalHint   model.SignalType `json:"signalHint"`
 }
 
@@ -97,21 +97,24 @@ func decodeJSON(body []byte, signalHint model.SignalType) (model.SignalType, str
 	for _, s := range dedupeSignals(order) {
 		switch s {
 		case model.SignalTraces:
-			td := ptrace.NewTraces()
-			if err := ptrace.JSONUnmarshaler{}.UnmarshalTraces(body, td); err == nil {
-				b, _ := ptrace.JSONMarshaler{}.MarshalTraces(td)
+			u := &ptrace.JSONUnmarshaler{}
+			m := &ptrace.JSONMarshaler{}
+			if td, err := u.UnmarshalTraces(body); err == nil {
+				b, _ := m.MarshalTraces(td)
 				return model.SignalTraces, string(b), summarizeTraces(td), map[string]any{"resourceSpans": td.ResourceSpans().Len()}, nil
 			}
 		case model.SignalMetrics:
-			md := pmetric.NewMetrics()
-			if err := pmetric.JSONUnmarshaler{}.UnmarshalMetrics(body, md); err == nil {
-				b, _ := pmetric.JSONMarshaler{}.MarshalMetrics(md)
+			u := &pmetric.JSONUnmarshaler{}
+			m := &pmetric.JSONMarshaler{}
+			if md, err := u.UnmarshalMetrics(body); err == nil {
+				b, _ := m.MarshalMetrics(md)
 				return model.SignalMetrics, string(b), summarizeMetrics(md), map[string]any{"resourceMetrics": md.ResourceMetrics().Len()}, nil
 			}
 		case model.SignalLogs:
-			ld := plog.NewLogs()
-			if err := plog.JSONUnmarshaler{}.UnmarshalLogs(body, ld); err == nil {
-				b, _ := plog.JSONMarshaler{}.MarshalLogs(ld)
+			u := &plog.JSONUnmarshaler{}
+			m := &plog.JSONMarshaler{}
+			if ld, err := u.UnmarshalLogs(body); err == nil {
+				b, _ := m.MarshalLogs(ld)
 				return model.SignalLogs, string(b), summarizeLogs(ld), map[string]any{"resourceLogs": ld.ResourceLogs().Len()}, nil
 			}
 		}
@@ -124,21 +127,24 @@ func decodeProto(body []byte, signalHint model.SignalType) (model.SignalType, st
 	for _, s := range dedupeSignals(order) {
 		switch s {
 		case model.SignalTraces:
-			td := ptrace.NewTraces()
-			if err := ptrace.ProtoUnmarshaler{}.UnmarshalTraces(body, td); err == nil && td.ResourceSpans().Len() > 0 {
-				b, _ := ptrace.JSONMarshaler{}.MarshalTraces(td)
+			u := &ptrace.ProtoUnmarshaler{}
+			m := &ptrace.JSONMarshaler{}
+			if td, err := u.UnmarshalTraces(body); err == nil && td.ResourceSpans().Len() > 0 {
+				b, _ := m.MarshalTraces(td)
 				return model.SignalTraces, string(b), summarizeTraces(td), map[string]any{"resourceSpans": td.ResourceSpans().Len()}, nil
 			}
 		case model.SignalMetrics:
-			md := pmetric.NewMetrics()
-			if err := pmetric.ProtoUnmarshaler{}.UnmarshalMetrics(body, md); err == nil && md.ResourceMetrics().Len() > 0 {
-				b, _ := pmetric.JSONMarshaler{}.MarshalMetrics(md)
+			u := &pmetric.ProtoUnmarshaler{}
+			m := &pmetric.JSONMarshaler{}
+			if md, err := u.UnmarshalMetrics(body); err == nil && md.ResourceMetrics().Len() > 0 {
+				b, _ := m.MarshalMetrics(md)
 				return model.SignalMetrics, string(b), summarizeMetrics(md), map[string]any{"resourceMetrics": md.ResourceMetrics().Len()}, nil
 			}
 		case model.SignalLogs:
-			ld := plog.NewLogs()
-			if err := plog.ProtoUnmarshaler{}.UnmarshalLogs(body, ld); err == nil && ld.ResourceLogs().Len() > 0 {
-				b, _ := plog.JSONMarshaler{}.MarshalLogs(ld)
+			u := &plog.ProtoUnmarshaler{}
+			m := &plog.JSONMarshaler{}
+			if ld, err := u.UnmarshalLogs(body); err == nil && ld.ResourceLogs().Len() > 0 {
+				b, _ := m.MarshalLogs(ld)
 				return model.SignalLogs, string(b), summarizeLogs(ld), map[string]any{"resourceLogs": ld.ResourceLogs().Len()}, nil
 			}
 		}
@@ -249,10 +255,10 @@ func dedupeSignals(in []model.SignalType) []model.SignalType {
 	return out
 }
 
-func mapKeys[K ~string](m map[string]struct{}) []K {
-	out := make([]K, 0, len(m))
+func mapKeys(m map[string]struct{}) []string {
+	out := make([]string, 0, len(m))
 	for k := range m {
-		out = append(out, K(k))
+		out = append(out, k)
 	}
 	sort.Slice(out, func(i, j int) bool { return bytes.Compare([]byte(out[i]), []byte(out[j])) < 0 })
 	return out
