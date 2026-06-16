@@ -12,10 +12,12 @@ RUN go mod download
 COPY backend/ ./
 COPY --from=frontend-build /app/frontend/dist ./cmd/otlp-viewer/ui/dist
 RUN CGO_ENABLED=0 go build -o /out/otlp-viewer ./cmd/otlp-viewer
+RUN mkdir -p /data
 
 FROM gcr.io/distroless/base-debian12:nonroot
 WORKDIR /app
 COPY --from=backend-build /out/otlp-viewer /app/otlp-viewer
+COPY --from=backend-build --chown=65532:65532 /data /data
 VOLUME ["/data"]
 EXPOSE 8080
 ENTRYPOINT ["/app/otlp-viewer"]
