@@ -19,4 +19,13 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    // Design-system primitives intentionally re-export styled Radix parts and
+    // shared variants alongside components; fast-refresh's component-only rule
+    // does not apply to these wrapper files.
+    files: ['src/components/ui/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])

@@ -1,13 +1,20 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { BrowserRouter } from 'react-router-dom'
-import { expect, test, vi } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
+import { expect, test, vi, beforeEach } from 'vitest'
+import { TooltipProvider } from '@/components/ui/Tooltip'
 import App from './App'
 
-function renderApp() {
-  return render(<BrowserRouter><App /></BrowserRouter>)
+function renderAt(path: string) {
+  return render(
+    <MemoryRouter initialEntries={[path]}>
+      <TooltipProvider>
+        <App />
+      </TooltipProvider>
+    </MemoryRouter>,
+  )
 }
 
-test('paste payload and show validation result area', async () => {
+beforeEach(() => {
   globalThis.fetch = vi.fn().mockResolvedValue({
     ok: true,
     json: async () => ({
@@ -20,16 +27,19 @@ test('paste payload and show validation result area', async () => {
       problems: ['problem'],
     }),
   }) as unknown as typeof fetch
+})
 
-  renderApp()
-  fireEvent.click(screen.getByText('Paste'))
-  fireEvent.change(screen.getByPlaceholderText('Paste OTLP payload here'), { target: { value: '{"resourceLogs":[]}' } })
-  fireEvent.click(screen.getByText('Analyze'))
+test('paste payload and show the decoded result', async () => {
+  renderAt('/paste')
+  fireEvent.change(screen.getByPlaceholderText('Paste OTLP payload here'), {
+    target: { value: '{"resourceLogs":[]}' },
+  })
+  fireEvent.click(screen.getByRole('button', { name: /Analyze/i }))
   await waitFor(() => screen.getByText(/Signal:/))
 })
 
-test('topic browser renders mock data', () => {
-  renderApp()
-  fireEvent.click(screen.getByText('Kafka'))
-  expect(screen.getByText('otel-logs')).toBeTruthy()
+test('home dashboard renders quick actions', () => {
+  renderAt('/')
+  expect(screen.getAllByText('Paste analyzer').length).toBeGreaterThan(0)
+  expect(screen.getAllByText('Kafka browser').length).toBeGreaterThan(0)
 })
